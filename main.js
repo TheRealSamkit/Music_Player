@@ -208,10 +208,10 @@ function waveform(song) {
 			const y = canvas.height / 2 - barHeight / 2;
 
 			ctx.fillStyle = "rgb(110, 1, 17)";
-			ctx.fillRect(x, y, barWidth, barHeight + 12);
+			ctx.fillRect(x, y, barWidth, barHeight + 19);
 
 			ctx.fillStyle = "rgba(224, 68, 1, 0.85)";
-			ctx.fillRect(x, y, barWidth, barHeight + 5);
+			ctx.fillRect(x, y, barWidth, barHeight + 12);
 
 			x += barWidth + 2;
 		}

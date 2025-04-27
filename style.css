@@ -58,6 +58,19 @@ body {
 	border-radius: 20px;
 }
 
+.rotate {
+	border-radius: 50%;
+	position: absolute;
+	animation: spin 10s linear infinite;
+}
+
+@keyframes spin {
+	100% {
+		-webkit-transform: rotate(360deg);
+		transform: rotate(360deg);
+	}
+}
+
 .seek-controls {
 	height: auto;
 	width: 100%;
