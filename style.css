@@ -69,12 +69,16 @@ body {
 	margin: 0 4px;
 }
 
-span {
+span svg {
 	color: var(--primary-color);
 }
 
 .controls {
 	width: 80%;
+}
+
+.controls svg {
+	cursor: pointer;
 }
 
 .seek-bar {
@@ -104,12 +108,14 @@ span {
 }
 
 .songitem {
+	display: flex;
 	background-color: var(--primary-color);
 	color: var(--bg-color);
 	padding: 10px 25px;
 	margin: 5px 0;
 	border-radius: 20px;
 	font-size: calc(1.5rem);
+	justify-content: space-between;
 	cursor: pointer;
 }
 
