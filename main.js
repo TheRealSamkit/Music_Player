@@ -198,13 +198,13 @@ function waveform(song) {
 		analyser.getByteFrequencyData(dataArray);
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-		const barWidth = (canvas.width / bufferLength) * 1.5;
+		const barWidth = (canvas.width / bufferLength) * 2;
 		let x = 0;
 
 		for (let i = 0; i < bufferLength; i++) {
 			smoothData[i] += (dataArray[i] - smoothData[i]) * 0.2;
 
-			let barHeight = Math.pow(smoothData[i], 0.8); // thoda scale
+			let barHeight = Math.pow(smoothData[i], 0.8);
 			const y = canvas.height / 2 - barHeight / 2;
 
 			ctx.fillStyle = "rgb(110, 1, 17)";
