@@ -7,7 +7,7 @@
 
 :root {
 	--bg-color: #f1f0cc;
-	--secondary-color: #a71d31;
+	--secondary-color: rgb(167, 29, 49);
 	--font-size: 2.5rem;
 	--primary-color: #040303;
 	--song-Length: "0:00";
@@ -54,7 +54,7 @@ body {
 
 .img-container {
 	height: 15rem;
-	width: 15rem;
+	width: auto;
 	border-radius: 20px;
 }
 
@@ -68,6 +68,7 @@ body {
 	width: 80%;
 	height: 100%;
 	margin: 0 4px;
+	cursor: pointer;
 }
 
 span svg {
@@ -82,22 +83,52 @@ span svg {
 	cursor: pointer;
 }
 
-.seek-bar {
+.seek-bar,
+.seeking-bar {
 	display: block;
+	padding: 5px;
 	border-radius: 50px;
 	width: 100%;
 	height: 3px;
 	background-color: var(--primary-color);
 }
 
+.seeking-bar {
+	position: absolute;
+	background-color: var(--secondary-color);
+	left: 0px;
+	width: 0%;
+}
+
+.min-duration,
+.max-duration {
+	margin: 2px;
+	width: 2rem;
+}
+
 .seek-ball {
-	border: 1px solid var(--primary-color);
-	height: 10px;
-	width: 10px;
+	border: 2px solid var(--primary-color);
+	height: 20px;
+	width: 20px;
 	background-color: var(--bg-color);
 	border-radius: 50%;
+	left: -1px;
 	position: absolute;
-	left: 0px;
+	opacity: 0;
+	transition: opacity 0.1s ease-in-out;
+}
+
+.seek:hover .seek-ball {
+	opacity: 100%;
+}
+
+.song-name {
+	overflow: scroll;
+	width: 70%;
+}
+
+.song-name::-webkit-scrollbar {
+	display: none;
 }
 
 .song-container {
@@ -118,6 +149,7 @@ span svg {
 	font-size: calc(1.5rem);
 	justify-content: space-between;
 	cursor: pointer;
+	flex-wrap: wrap;
 }
 
 .svg-btn {

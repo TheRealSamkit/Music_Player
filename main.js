@@ -8,6 +8,9 @@ const maxDuration = document.querySelector(".max-duration");
 const minDuration = document.querySelector(".min-duration");
 const songContainer = document.querySelector(".song-container");
 const player = document.querySelector(".player");
+const seekBall = document.querySelector(".seek-ball");
+const seekingBar = document.querySelector(".seeking-bar");
+const seekCon = document.querySelector(".seek");
 
 const pause = `<path d="M520-200v-560h240v560H520Zm-320 0v-560h240v560H200Zm400-80h80v-400h-80v400Zm-320 0h80v-400h-80v400Zm0-400v400-400Zm320 0v400-400Z"/>`;
 const play = `<path d="M320-200v-560l440 280-440 280Zm80-280Zm0 134 210-134-210-134v268Z"/>`;
@@ -41,12 +44,12 @@ function playSong(song = previousSong) {
 		isPlaying = false;
 		playBtn.innerHTML = play;
 		previousSong.pause();
-		clearInterval(intervalId); // Stop updating min duration
+		clearInterval(intervalId);
 	} else {
 		isPlaying = true;
 		playBtn.innerHTML = pause;
 		previousSong.play();
-		animate(); // Start updating min duration
+		animate();
 	}
 
 	previousSong.onloadedmetadata = () => {
@@ -114,7 +117,7 @@ async function addSongs() {
 
 		songItem.setAttribute("data-songname", songs[i]);
 
-		songItem.innerHTML = `<span>${songs[i].substring(
+		songItem.innerHTML = `<span class='song-name'>${songs[i].substring(
 			songs[i].search(/songs/) + 6,
 			songs[i].length - 4
 		)}</span>`;
@@ -145,16 +148,19 @@ function formatTime(duration) {
 
 function animate() {
 	clearInterval(intervalId);
-
 	intervalId = setInterval(() => {
 		if (previousSong) {
 			minDuration.innerHTML = formatTime(previousSong.currentTime);
+
+			const progressPercent =
+				(previousSong.currentTime / previousSong.duration) * 100;
+			seekingBar.style.width = `${progressPercent}%`;
+			seekBall.style.left = `${progressPercent - 2}%`;
 		}
 	}, 1000);
 }
 
 function waveform(song) {
-	// Check if AudioContext already exists
 	if (!audioContext) {
 		audioContext = new (window.AudioContext || window.webkitAudioContext)();
 	}
@@ -172,7 +178,6 @@ function waveform(song) {
 		player.appendChild(canvas);
 	}
 
-	// IMPORTANT: Create source only if not already created for the SAME song
 	if (!source || source.mediaElement !== song) {
 		if (source) {
 			source.disconnect();
@@ -187,6 +192,8 @@ function waveform(song) {
 		dataArray = new Uint8Array(bufferLength);
 	}
 
+	let smoothData = new Uint8Array(bufferLength);
+
 	function draw() {
 		analyser.getByteFrequencyData(dataArray);
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -195,20 +202,39 @@ function waveform(song) {
 		let x = 0;
 
 		for (let i = 0; i < bufferLength; i++) {
-			const barHeight = dataArray[i];
+			smoothData[i] += (dataArray[i] - smoothData[i]) * 0.2;
+
+			let barHeight = Math.pow(smoothData[i], 0.8); // thoda scale
 			const y = canvas.height / 2 - barHeight / 2;
 
-			ctx.fillStyle = "rgb(255, 0, 0)";
-			ctx.fillRect(x, y, barWidth, barHeight + 2);
+			ctx.fillStyle = "rgb(110, 1, 17)";
+			ctx.fillRect(x, y, barWidth, barHeight + 12);
+
+			ctx.fillStyle = "rgba(224, 68, 1, 0.85)";
+			ctx.fillRect(x, y, barWidth, barHeight + 5);
 
 			x += barWidth + 2;
 		}
 		requestAnimationFrame(draw);
 	}
 
-	song.removeEventListener("play", song._drawListener); // Remove old listener if any
+	song.removeEventListener("play", song._drawListener);
 	song._drawListener = () => {
 		audioContext.resume().then(draw);
 	};
 	song.addEventListener("play", song._drawListener);
 }
+
+seekCon.addEventListener("click", (e) => {
+	if (!previousSong) return;
+
+	const seekWidth = seekCon.clientWidth;
+	const offsetX = e.offsetX; // user ne click kaha kiya
+	const percentage = offsetX / seekWidth; // click ka percentage
+	const newTime = previousSong.duration * percentage; // song ke duration ke hisaab se calculate
+	previousSong.currentTime = newTime; // song ko nayi position pe le jaao
+
+	// Immediately update UI
+	seekingBar.style.width = `${percentage * 100}%`;
+	seekBall.style.left = `${percentage * 100}%`;
+});
