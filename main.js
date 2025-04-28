@@ -11,6 +11,7 @@ const player = document.querySelector(".player");
 const seekBall = document.querySelector(".seek-ball");
 const seekingBar = document.querySelector(".seeking-bar");
 const seekCon = document.querySelector(".seek");
+const currentCon = document.querySelector(".Current-Playing-Song");
 
 const pause = `<path d="M520-200v-560h240v560H520Zm-320 0v-560h240v560H200Zm400-80h80v-400h-80v400Zm-320 0h80v-400h-80v400Zm0-400v400-400Zm320 0v400-400Z"/>`;
 const play = `<path d="M320-200v-560l440 280-440 280Zm80-280Zm0 134 210-134-210-134v268Z"/>`;
@@ -28,12 +29,22 @@ let bufferLength;
 let dataArray;
 let mySongs = [];
 
-const audio = new Audio(); // one single reusable audio element
-
+const audio = new Audio();
 document.addEventListener("DOMContentLoaded", () => {
 	audioController.addEventListener("click", () => togglePlayPause());
 	forwardBtn.addEventListener("click", forward);
 	rewindBtn.addEventListener("click", rewind);
+	document.onkeydown = (e) => {
+		if (e.key === " " || e.key === "k") {
+			togglePlayPause();
+		}
+		if (e.key === "ArrowRight" || e.key === "l") {
+			forward();
+		}
+		if (e.key === "ArrowLeft" || e.key === "j") {
+			rewind();
+		}
+	};
 	addSongs();
 	setupAudio();
 });
@@ -60,7 +71,13 @@ async function togglePlayPause() {
 		isPlaying = false;
 	} else {
 		try {
+			console.log(audio.src);
+			currentCon.innerText = audio.src; /*.substring(
+				audio.src.search(/gs/) - 3,
+				audio.src.length - 4
+			);*/
 			await audio.play();
+
 			playBtn.innerHTML = pause;
 			animate();
 			isPlaying = true;
@@ -74,6 +91,12 @@ async function loadSong(index) {
 	audio.src = mySongs[index];
 	await audio.load();
 	try {
+		console.log(audio.src);
+		currentCon.innerText =
+			audio.src.substring(
+				audio.src.search(/gs/) + 3,
+				audio.src.length - 4
+			) + "....";
 		await audio.play();
 		playBtn.innerHTML = pause;
 		isPlaying = true;

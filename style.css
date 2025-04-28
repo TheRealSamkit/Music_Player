@@ -170,6 +170,11 @@ span svg {
 	display: none;
 }
 
+.Current-Playing-Song {
+	width: 100%;
+	font-size: 1.2rem;
+}
+
 .song-container::after {
 	content: "";
 	position: absolute;
