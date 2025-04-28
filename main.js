@@ -17,7 +17,7 @@ const play = `<path d="M320-200v-560l440 280-440 280Zm80-280Zm0 134 210-134-210-
 
 let isPlaying = false;
 let songsLength = Object.keys(songs).length;
-let previousSong = null;
+let previousSongIndex = 0;
 let intervalId;
 let audioContext;
 let analyser;
@@ -28,79 +28,73 @@ let bufferLength;
 let dataArray;
 let mySongs = [];
 
+const audio = new Audio(); // one single reusable audio element
+
 document.addEventListener("DOMContentLoaded", () => {
-	audioController.addEventListener("click", () => playSong());
+	audioController.addEventListener("click", () => togglePlayPause());
 	forwardBtn.addEventListener("click", forward);
 	rewindBtn.addEventListener("click", rewind);
 	addSongs();
+	setupAudio();
 });
 
-function playSong(song = previousSong) {
-	if (!song) {
-		song = new Audio(mySongs[0]);
-		previousSong = song;
+function setupAudio() {
+	audio.addEventListener("ended", forward);
+	audio.addEventListener("loadedmetadata", () => {
+		maxDuration.innerHTML = formatTime(audio.duration);
+	});
+	audio.addEventListener("timeupdate", updateProgressBar);
+	audio.addEventListener("play", () => {
+		audioContext?.resume();
+	});
+}
+async function togglePlayPause() {
+	if (audio.src === "" && mySongs.length > 0) {
+		await loadSong(0);
+		return;
 	}
 	if (isPlaying) {
-		isPlaying = false;
+		audio.pause();
 		playBtn.innerHTML = play;
-		previousSong.pause();
 		clearInterval(intervalId);
+		isPlaying = false;
 	} else {
-		isPlaying = true;
-		playBtn.innerHTML = pause;
-		previousSong.play();
-		previousSong.addEventListener("ended", forward);
-		animate();
+		try {
+			await audio.play();
+			playBtn.innerHTML = pause;
+			animate();
+			isPlaying = true;
+		} catch (error) {
+			console.error("Playback failed:", error);
+		}
 	}
-
-	previousSong.onloadedmetadata = () => {
-		maxDuration.innerHTML = formatTime(previousSong.duration);
-	};
-	waveform(previousSong);
+}
+async function loadSong(index) {
+	if (index < 0 || index >= mySongs.length) return;
+	audio.src = mySongs[index];
+	await audio.load();
+	try {
+		await audio.play();
+		playBtn.innerHTML = pause;
+		isPlaying = true;
+		previousSongIndex = index;
+		waveform(audio);
+		animate();
+	} catch (error) {
+		console.error("Playback failed:", error);
+	}
 }
 
 function forward() {
-	if (!previousSong) return;
-
-	let currentIndex = mySongs.findIndex(
-		(src) =>
-			src ===
-			previousSong.src.substring(
-				previousSong.src.search(/as/),
-				previousSong.src.length
-			)
-	);
-	if (currentIndex === -1) currentIndex = 0;
-
-	let nextIndex = currentIndex + 1;
+	let nextIndex = previousSongIndex + 1;
 	if (nextIndex >= mySongs.length) nextIndex = 0;
-
-	previousSong.pause();
-	previousSong = new Audio(mySongs[nextIndex]);
-	isPlaying = false;
-	playSong(previousSong);
+	loadSong(nextIndex);
 }
 
 function rewind() {
-	if (!previousSong) return;
-
-	let currentIndex = mySongs.findIndex(
-		(src) =>
-			src ===
-			previousSong.src.substring(
-				previousSong.src.search(/as/),
-				previousSong.src.length
-			)
-	);
-	if (currentIndex === -1) currentIndex = 0;
-
-	let prevIndex = currentIndex - 1;
+	let prevIndex = previousSongIndex - 1;
 	if (prevIndex < 0) prevIndex = mySongs.length - 1;
-
-	previousSong.pause();
-	previousSong = new Audio(mySongs[prevIndex]);
-	isPlaying = false;
-	playSong(previousSong);
+	loadSong(prevIndex);
 }
 
 async function addSongs() {
@@ -111,35 +105,27 @@ async function addSongs() {
 		songItem.classList.add("songitem");
 		songLength.classList.add("song-length");
 
-		let audio = new Audio(songs[i]);
-		audio.onloadedmetadata = () => {
-			songLength.innerText = formatTime(audio.duration);
+		let tempAudio = new Audio(songs[i]);
+		tempAudio.onloadedmetadata = () => {
+			songLength.innerText = formatTime(tempAudio.duration);
 		};
 
-		songItem.setAttribute("data-songname", songs[i]);
+		songItem.setAttribute("data-index", i);
 
 		songItem.innerHTML = `<span class='song-name'>${songs[i].substring(
 			songs[i].search(/songs/) + 6,
 			songs[i].length - 4
 		)}</span>`;
 
-		songItem.onclick = () =>
-			setUp(new Audio(songItem.getAttribute("data-songname")));
+		songItem.onclick = () => {
+			loadSong(parseInt(songItem.getAttribute("data-index")));
+		};
+
 		songItem.appendChild(songLength);
 		mySongs.push(songs[i]);
-
 		songContainer.appendChild(songItem);
 		songItem.classList.add("appear-animation");
 	}
-}
-
-function setUp(song) {
-	if (previousSong !== null) {
-		previousSong.pause();
-		isPlaying = false;
-	}
-	previousSong = song;
-	playSong(song);
 }
 
 function formatTime(duration) {
@@ -152,15 +138,16 @@ function formatTime(duration) {
 function animate() {
 	clearInterval(intervalId);
 	intervalId = setInterval(() => {
-		if (previousSong) {
-			minDuration.innerHTML = formatTime(previousSong.currentTime);
-
-			const progressPercent =
-				(previousSong.currentTime / previousSong.duration) * 100;
-			seekingBar.style.width = `${progressPercent}%`;
-			seekBall.style.left = `${progressPercent - 2}%`;
-		}
+		minDuration.innerHTML = formatTime(audio.currentTime);
 	}, 1000);
+}
+
+function updateProgressBar() {
+	if (audio.duration) {
+		const progressPercent = (audio.currentTime / audio.duration) * 100;
+		seekingBar.style.width = `${progressPercent}%`;
+		seekBall.style.left = `${progressPercent - 2}%`;
+	}
 }
 
 function waveform(song) {
@@ -221,21 +208,17 @@ function waveform(song) {
 		requestAnimationFrame(draw);
 	}
 
-	song.removeEventListener("play", song._drawListener);
-	song._drawListener = () => {
-		audioContext.resume().then(draw);
-	};
-	song.addEventListener("play", song._drawListener);
+	requestAnimationFrame(draw);
 }
 
 seekCon.addEventListener("click", (e) => {
-	if (!previousSong) return;
+	if (!audio.src) return;
 
 	const seekWidth = seekCon.clientWidth;
-	const offsetX = e.offsetX; // user ne click kaha kiya
-	const percentage = offsetX / seekWidth; // click ka percentage
-	const newTime = previousSong.duration * percentage; // song ke duration ke hisaab se calculate
-	previousSong.currentTime = newTime; // song ko nayi position pe le jaao
+	const offsetX = e.offsetX;
+	const percentage = offsetX / seekWidth;
+	const newTime = audio.duration * percentage;
+	audio.currentTime = newTime;
 
 	// Immediately update UI
 	seekingBar.style.width = `${percentage * 100}%`;
