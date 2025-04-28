@@ -1,5 +1,5 @@
 const songs = {
-	0: `assets/songs/Laree_choote.mp3`,
+	0: `assets/songs/Laree_Choote.mp3`,
 	1: `assets/songs/Khayal.mp3`,
 	2: `assets/songs/Zindagi_Bata_De.mp3`,
 	3: `assets/songs/Hai_Apna.mp3`,
