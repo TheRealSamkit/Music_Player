@@ -71,11 +71,10 @@ async function togglePlayPause() {
 		isPlaying = false;
 	} else {
 		try {
-			console.log(audio.src);
-			currentCon.innerText = audio.src; /*.substring(
-				audio.src.search(/gs/) - 3,
+			currentCon.innerText = audio.src.substring(
+				audio.src.search(/gs/) + 3,
 				audio.src.length - 4
-			);*/
+			);
 			await audio.play();
 
 			playBtn.innerHTML = pause;
