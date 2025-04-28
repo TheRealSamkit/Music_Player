@@ -2,7 +2,7 @@
 	padding: 0;
 	margin: 0;
 	box-sizing: border-box;
-	font-family: Comic Sans MS, Comic Sans, cursive;
+	font-family: Comic Sans MS, Comic Sans;
 }
 
 :root {
@@ -24,7 +24,7 @@ svg {
 }
 
 body {
-	background-color: var(--bg-color);
+	background-color: var(--primary-color);
 	height: 100vh;
 	width: 100vw;
 }
@@ -32,10 +32,15 @@ body {
 .container {
 	background-color: var(--primary-color);
 	height: 100%;
-	width: 100%;
+	min-width: 90vw;
 	/* border-radius: 20px; */
 	flex-direction: column;
-	padding: 20px 0;
+	padding: 1.5rem;
+}
+
+.bg {
+	box-shadow: 0 8px 32px rgba(255, 255, 255, 0.3);
+	backdrop-filter: blur(10px);
 }
 
 .audio-controls {
@@ -94,6 +99,8 @@ span svg {
 
 .controls svg {
 	cursor: pointer;
+	padding: 3px;
+	transition: background-color, fill 0.5s ease-out;
 }
 
 .seek-bar,
@@ -143,13 +150,40 @@ span svg {
 .song-name::-webkit-scrollbar {
 	display: none;
 }
-
 .song-container {
 	height: 50vh;
 	width: 60%;
 	background-color: var(--bg-color);
 	border-radius: 20px;
+	overflow: hidden;
+	position: relative;
+}
+
+.song-scrollable-content {
 	padding: 20px;
+	height: 100%;
+	width: 100%;
+	overflow-y: auto;
+}
+
+.song-scrollable-content::-webkit-scrollbar {
+	display: none;
+}
+
+.song-container::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: -1px;
+	height: 50%;
+	background: linear-gradient(
+		180deg,
+		rgba(255, 255, 255, 0) 0%,
+		#040303b5 100%
+	);
+	pointer-events: none;
+	border-radius: 0 0 20px 20px;
 }
 
 .songitem {
@@ -163,6 +197,21 @@ span svg {
 	justify-content: space-between;
 	cursor: pointer;
 	flex-wrap: wrap;
+	transition: background-color, transform 0.4s ease-out;
+}
+
+.appear-animation {
+	animation: slide-in 1s ease-out 1;
+}
+
+@keyframes slide-in {
+	0% {
+		transform: translateY(200px);
+		opacity: 00%;
+	}
+	100% {
+		opacity: 100%;
+	}
 }
 
 .svg-btn {
@@ -170,11 +219,40 @@ span svg {
 	width: var(--font-size);
 }
 
+@media only screen and (min-width: 992px) {
+	.controls svg:hover,
+	.controls svg:active {
+		background-color: var(--primary-color);
+		border-radius: 10px;
+		fill: var(--bg-color);
+	}
+
+	.songitem:hover {
+		background-color: #000000;
+		transform: scale(1.04);
+	}
+}
+
 @media only screen and (max-width: 768px) {
+	.container {
+		width: 100%;
+	}
+	.img-container {
+		width: 15rem;
+	}
 	.audio-controls {
 		width: 90%;
 	}
 	.song-container {
 		width: 90%;
+	}
+	.songitem:active {
+		background-color: #000000;
+		transform: scale(1.04);
+	}
+	.controls svg:active {
+		background-color: var(--primary-color);
+		border-radius: 10px;
+		fill: var(--bg-color);
 	}
 }

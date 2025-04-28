@@ -6,7 +6,7 @@ const rewindBtn = document.querySelector(".rewind-btn");
 const playBtn = document.querySelector(".play-pause");
 const maxDuration = document.querySelector(".max-duration");
 const minDuration = document.querySelector(".min-duration");
-const songContainer = document.querySelector(".song-container");
+const songContainer = document.querySelector(".song-scrollable-content");
 const player = document.querySelector(".player");
 const seekBall = document.querySelector(".seek-ball");
 const seekingBar = document.querySelector(".seeking-bar");
@@ -49,6 +49,7 @@ function playSong(song = previousSong) {
 		isPlaying = true;
 		playBtn.innerHTML = pause;
 		previousSong.play();
+		previousSong.addEventListener("ended", forward);
 		animate();
 	}
 
@@ -125,8 +126,10 @@ async function addSongs() {
 		songItem.onclick = () =>
 			setUp(new Audio(songItem.getAttribute("data-songname")));
 		songItem.appendChild(songLength);
-		songContainer.appendChild(songItem);
 		mySongs.push(songs[i]);
+
+		songContainer.appendChild(songItem);
+		songItem.classList.add("appear-animation");
 	}
 }
 
@@ -171,7 +174,7 @@ function waveform(song) {
 		player.innerHTML = "";
 		player.appendChild(canvas);
 		ctx = canvas.getContext("2d");
-		canvas.width = player.clientWidth;
+		canvas.width = player.clientWidth - 120;
 		canvas.height = 200;
 	} else {
 		player.innerHTML = "";
